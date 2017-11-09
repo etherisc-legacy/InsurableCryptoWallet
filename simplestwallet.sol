@@ -2,7 +2,8 @@ pragma solidity 0.4.18;
 
 contract SimplestWallet {
     
-    address constant public owner0 = 0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead; // hardcode addresses at time of deployment.
+    // hardcode addresses and threshold at time of deployment.
+    address constant public owner0 = 0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead; 
     address constant public owner1 = 0xcafecafecafecafecafecafecafecafecafecafe;
     address constant public owner2 = 0xbeefbeefbeefbeefbeefbeefbeefbeefbeefbeef;
     uint8 constant public threshold = 2;
