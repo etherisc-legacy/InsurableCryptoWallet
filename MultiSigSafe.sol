@@ -25,7 +25,7 @@ contract MultiSigSafe {
 
         // VALIDATE INPUTS
         require(value <= limit);            // check value within limits
-        require(destination <= 2);
+        require(destinationNumber <= 2);
 
         // CHECK AND CHOOSING DESTINATION
         if (destinationNumber == 0) { destination = destination0 }
