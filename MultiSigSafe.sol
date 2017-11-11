@@ -8,9 +8,9 @@ contract MultiSigSafe {
     address constant public owner2 = 0xBEeFbeefbEefbeEFbeEfbEEfBEeFbeEfBeEfBeef; //address of owner1
 
     // INITIALIZING DESTINATIONS
-    address constant public destination0 = 0xBEeFbeefbEefbeEFbeEfbEEfBEeFbeEfBeEfBeef; //address of destination wallet1
-    address constant public destination1 = 0xCAfEcAfeCAfECaFeCaFecaFecaFECafECafeCaFe; //address of destination wallet2
-    address constant public destination2 = 0xdeaDDeADDEaDdeaDdEAddEADDEAdDeadDEADDEaD; //address of destination wallet3
+    address constant public destination0 = 0xBEeFbeefbEefbeEFbeEfbEEfBEeFbeEfBeEfBeef; //address of destination wallet0
+    address constant public destination1 = 0xCAfEcAfeCAfECaFeCaFecaFecaFECafECafeCaFe; //address of destination wallet1
+    address constant public destination2 = 0xdeaDDeADDEaDdeaDdEAddEADDEAdDeadDEADDEaD; //address of destination wallet2
 
     // INITIALIZING GLOBAL PUBLIC VARIABLES
     uint8 constant public threshold = 2;    // Number of valid signatures for executing Tx
