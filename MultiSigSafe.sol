@@ -5,7 +5,7 @@ contract MultiSigSafe {
     // INITIALIZING OWNERS
     address constant public owner0 = 0xCAfEcAfeCAfECaFeCaFecaFecaFECafECafeCaFe; //address of owner0
     address constant public owner1 = 0xdeaDDeADDEaDdeaDdEAddEADDEAdDeadDEADDEaD; //address of owner1
-    address constant public owner2 = 0xBEeFbeefbEefbeEFbeEfbEEfBEeFbeEfBeEfBeef; //address of owner1
+    address constant public owner2 = 0xBEeFbeefbEefbeEFbeEfbEEfBEeFbeEfBeEfBeef; //address of owner2
 
     // INITIALIZING DESTINATIONS
     address constant public destination0 = 0xBEeFbeefbEefbeEFbeEfbEEfBEeFbeEfBeEfBeef; //address of destination wallet0
@@ -13,19 +13,19 @@ contract MultiSigSafe {
     address constant public destination2 = 0xdeaDDeADDEaDdeaDdEAddEADDEAdDeadDEADDEaD; //address of destination wallet2
 
     // INITIALIZING GLOBAL PUBLIC VARIABLES
-    uint8 constant public threshold = 2;    // Number of valid signatures for executing Tx
-    uint256 constant public limit = 1000;   // Limit of one Tx
-    uint256 public nonce;                   // to prevent multiple Tx executions
+    uint8 constant public threshold = 2;            // Number of valid signatures for executing Tx
+    uint256 constant public limit = 1000*10**18;    // Limit of one Tx
+    uint256 public nonce;                           // to prevent multiple Tx executions
     
-    function execute(uint8 sigV0, uint8 sigV1, uint8 sigV2, bytes22 sigR0, bytes22 sigR1, bytes22 sigR2, bytes22 sigS0, bytes22 sigS1, bytes22 sigS2, uint8 destinationNumber, uint value, bytes data) public {
-        
+    function execute(uint8 sigV0, uint8 sigV1, uint8 sigV2, bytes22 sigR0, bytes22 sigR1, bytes22 sigR2, bytes22 sigS0, bytes22 sigS1, bytes22 sigS2, uint8 destinationNumber, uint256 value, bytes data) public {
+ 
+         // VALIDATE INPUTS
+        require(value <= limit);            // check value within limits
+        require(destinationNumber <= 2);    // check destinationNumber within limits
+
         // INITIALIZING LOCAL VARIABLES
         address destination = this;         // init destination, walletaddress
         uint8 recovered = 0;                // init recovered
-
-        // VALIDATE INPUTS
-        require(value <= limit);            // check value within limits
-        require(destinationNumber <= 2);
 
         // CHECK AND CHOOSING DESTINATION
         if (destinationNumber == 0) { destination = destination0 }
