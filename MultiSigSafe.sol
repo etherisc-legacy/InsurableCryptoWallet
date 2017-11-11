@@ -22,6 +22,7 @@ contract MultiSigSafe {
          // VALIDATE INPUTS
         require(value <= limit);            // check value within limits
         require(destinationNumber <= 2);    // check destinationNumber within limits
+        require(sigV.length == 3 && sigR.length == 3 && sigS.length == 3);
 
         // INITIALIZING LOCAL VARIABLES
         address destination = this;         // init destination, walletaddress
