@@ -1,0 +1,32 @@
+{
+  "name": "multisigsafe",
+  "version": "1.0.0",
+  "description": "We propose a multisig wallet which is reliable enough to store  values larger than USD 1M and is insurable at the same time.",
+  "main": "truffle-config.js",
+  "bin": {
+    "multisigsafe": "testrpc.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etherisc/MultiSigSafe.git"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/etherisc/MultiSigSafe/issues"
+  },
+  "homepage": "https://github.com/etherisc/MultiSigSafe#readme",
+  "dependencies": {
+    "bignumber.js": "^4.1.0",
+    "bluebird": "^3.5.1",
+    "eth-lightwallet": "^2.5.6",
+    "ethereumjs-util": "^5.1.2",
+    "left-pad": "^1.1.3",
+    "solidity-sha3": "^0.4.1"
+  }
+}

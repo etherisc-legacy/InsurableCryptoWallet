@@ -1,0 +1,9 @@
+*.sublime-project
+*.sublime-workspace
+npm-debug.log
+.idea
+node_modules
+build
+.node-xmlhttprequest-*
+/lint-sol.out
+package-lock.json
