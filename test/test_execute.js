@@ -23,14 +23,7 @@ contract('MultiSigSafe', (accounts) => {
     let acct;
     let keystore;
     let keyFromPw;
-    const dest0 = 0; // accounts[3]
-    const dest1 = 1; // accounts[4]
-    const dest2 = 2; // accounts[5]
-    const dest3 = 3; // accounts[6]
-    const dest0Address = accounts[3];
-    const dest1Address = accounts[4];
-    const dest2Address = accounts[5];
-    const dest3Address = accounts[6];
+    let destination;
 
     const createSigs = (signers, multisigAddr, nonce, destinationAddr, value, data) => {
 
@@ -42,14 +35,6 @@ contract('MultiSigSafe', (accounts) => {
             leftPad(nonce.toString('16'), '64', '0')}`;
 
         const hash = solsha3(input);
-
-        console.log('MultiSigAddress: ', multisigAddr);
-        console.log('Nonce: ', nonce);
-        console.log('DestinationAddr: ', destinationAddr);
-        console.log('Value: ', ether(value));
-        console.log('data', data);
-
-        console.log('txHash', hash);
 
         const sigV = [];
         const sigR = [];
@@ -87,6 +72,7 @@ contract('MultiSigSafe', (accounts) => {
         const sendValue = web3.toWei(new BigNumber(0.01), 'ether');
         const fundValue = web3.toWei(new BigNumber(0.1), 'ether');
 
+        destination = solsha3(Math.random()).slice(0, 42);
 
         // Receive funds
         await web3SendTransaction({ from: accounts[0], to: multisig.address, value: fundValue, });
@@ -103,37 +89,29 @@ contract('MultiSigSafe', (accounts) => {
         let bal = await web3GetBalance(multisig.address);
         assert.equal(ether(bal), ether(fundValue), `multisig balance should be ${ether(fundValue)}`);
 
-        console.log('Wallet checked!');
+        let sigs = createSigs(signers, multisig.address, nonce, destination, sendValue, '0x');
 
-        let sigs = createSigs(signers, multisig.address, nonce, dest0Address, sendValue, '0x');
-
-        const oldBal = await web3GetBalance(dest0Address);
-
-        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, dest0, sendValue, '0x', { from: accounts[0], gasLimit: 1000000, });
-        console.log('Check1');
+        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, destination, sendValue, '0x', { from: accounts[0], gasLimit: 1000000, });
 
         // Check funds sent
-        bal = await web3GetBalance(dest0Address);
-        assert.equal(ether(bal.minus(oldBal)), ether(sendValue), `1. balance should be ${sendValue.toString()}`);
+        bal = await web3GetBalance(destination);
+        assert.equal(ether(bal), ether(sendValue), `1. balance should be ${sendValue.toString()}`);
 
         // Check nonce updated
         nonce = await multisig.nonce.call();
         assert.equal(nonce.toNumber(), 1, 'nonce should be 1');
 
         // Send again
-        sigs = createSigs(signers, multisig.address, nonce, dest0Address, sendValue, '0x');
-        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, dest0, sendValue, '0x', { from: accounts[0], gasLimit: 1000000, });
-        console.log('Check2');
+        sigs = createSigs(signers, multisig.address, nonce, destination, sendValue, '0x');
+        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, destination, sendValue, '0x', { from: accounts[0], gasLimit: 1000000, });
 
         // Check funds
-        bal = await web3GetBalance(dest0Address);
-        assert.equal(ether(bal.minus(oldBal)), ether(sendValue.times(2)), `2. balance should be ${sendValue.times(2).toString()}`);
+        bal = await web3GetBalance(destination);
+        assert.equal(ether(bal), ether(sendValue.times(2)), `2. balance should be ${sendValue.times(2).toString()}`);
 
         // Check nonce updated
         nonce = await multisig.nonce.call();
         assert.equal(nonce.toNumber(), 2, '3. nonce should be 2');
-
-        /*
 
         // Test contract interactions
         const reg = await TestRegistry.new({ from: accounts[0], });
@@ -141,8 +119,8 @@ contract('MultiSigSafe', (accounts) => {
         const number = 12345;
         const data = `0x${lightwallet.txutils._encodeFunctionTxData('register', ['uint256'], [number])}`;
 
-        sigs = createSigs(signers, multisig.address, nonce, reg.address, value, data);
-        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, reg.address, value, data, { from: accounts[0], gasLimit: 1000000, });
+        sigs = createSigs(signers, multisig.address, nonce, reg.address, sendValue, data);
+        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, reg.address, sendValue, data, { from: accounts[0], gasLimit: 1000000, });
 
         // Check that number has been set in registry
         const numFromRegistry = await reg.registry(multisig.address);
@@ -150,12 +128,12 @@ contract('MultiSigSafe', (accounts) => {
 
         // Check funds in registry
         bal = await web3GetBalance(reg.address);
-        assert.equal(bal.toString(), value.toString());
+        assert.equal(bal.toString(), sendValue.toString());
 
         // Check nonce updated
         nonce = await multisig.nonce.call();
         assert.equal(nonce.toNumber(), 3);
-*/
+
         done();
 
     };
@@ -173,12 +151,12 @@ contract('MultiSigSafe', (accounts) => {
         // Receive funds
         await web3SendTransaction({ from: accounts[0], to: multisig.address, value: value2, });
 
-        const sigs = createSigs(signers, multisig.address, nonce, dest1Address, value, '0x');
+        const sigs = createSigs(signers, multisig.address, nonce, destination, value, '0x');
 
         let errMsg = '';
         try {
 
-            await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, dest1Address, value, '0x', { from: accounts[0], gasLimit: 1000000, });
+            await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, destination, value, '0x', { from: accounts[0], gasLimit: 1000000, });
 
         } catch (error) {
 
@@ -249,6 +227,13 @@ contract('MultiSigSafe', (accounts) => {
 
         });
 
+        it('should succeed with signers 0, 1, 2', (done) => {
+
+            const signers = [acct[0], acct[1], acct[2]];
+            executeSendSuccess(signers, done);
+
+        });
+
         it('should fail due to non-owner signer', (done) => {
 
             const signers = [acct[0], nullAcct, acct[3]];
@@ -258,7 +243,7 @@ contract('MultiSigSafe', (accounts) => {
 
         it('should fail with more signers than threshold', (done) => {
 
-            executeSendFailure(acct.slice(0, 3), done);
+            executeSendFailure(acct.slice(0, 4), done);
 
         });
 
