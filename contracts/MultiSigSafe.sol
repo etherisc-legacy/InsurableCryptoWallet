@@ -12,9 +12,15 @@ contract MultiSigSafe {
     address constant public destination1 = 0x0d1d4e623D10F9FBA5Db95830F7d3839406C6AF2; //address of destination wallet1
     address constant public destination2 = 0x2932b7A2355D6fecc4b5c0B6BD44cC31df247a2e; //address of destination wallet2
 
+    // INITIALIZING TOKENS
+    address constant public token0 = 0x821aEa9a577a9b44299B9c15c88cf3087F3b5544; //address of token0
+    address constant public token1 = 0x0d1d4e623D10F9FBA5Db95830F7d3839406C6AF2; //address of token1
+    address constant public token2 = 0x2932b7A2355D6fecc4b5c0B6BD44cC31df247a2e; //address of token2
+
     // INITIALIZING GLOBAL PUBLIC VARIABLES
     uint8 constant public threshold = 2;            // Number of valid signatures for executing Tx
-    uint256 constant public limit = 1000*10**18;    // Limit of one Tx
+    uint256 constant public ethlimit = 1000*10**18; // Limit of one ETH Tx
+    uint256 constant public tokenlimit = 1000;      // Limit of one Token Tx
     uint256 public nonce;                           // to prevent multiple Tx executions
 
 // --> start debug
@@ -44,13 +50,18 @@ contract MultiSigSafe {
 // --> end debug
  
         // VALIDATE INPUTS
-        require(value <= limit);            // check value within limits
+        require(value <= ethlimit);         // check value within limits
         require(destinationNumber <= 2);    // check destinationNumber within limits
         require(sigV.length == 3 && sigR.length == 3 && sigS.length == 3);
+        require(data.length == 2)
+        require(data[0]<=2);
+        require(data[1]<=tokenlimit)
 
         // INITIALIZING LOCAL VARIABLES
         address destination = this;         // init destination, walletaddress
+        address tokendestination = this;    // init destination, walletaddress
         uint8 recovered = 0;                // init recovered
+        uint8 tokenNumber = data[0];        // init tokenNumber
 
         // CHECK AND CHOOSING DESTINATION
         if (destinationNumber == 0) { destination = destination0; }
@@ -58,6 +69,13 @@ contract MultiSigSafe {
         else if (destinationNumber == 2) { destination = destination2; }
 
         LogAddress('Destination: ', destination);
+
+        // CHECK AND CHOOSING TOKEN
+        if (tokenNumber == 0) { tokendestination = token0; }
+        else if (tokenNumber == 1) { tokendestination = token1; }
+        else if (tokenNumber == 2) { tokendestination = token2; }
+
+        LogAddress('TokenDestination: ', tokendestination);
 
         // VERIFYING OWNERS
         // Follows ERC191 signature scheme: https://github.com/ethereum/EIPs/issues/191
@@ -71,14 +89,15 @@ contract MultiSigSafe {
         LogUint8('recovered', recovered);      
 
         // VALIDATE CONFIGURATION
-        // require(recovered >= threshold);    // validate configuration
+        require(recovered >= threshold);    // validate configuration
 
         // NONCE
         nonce = nonce + 1;                  // count nonce to avoid multiple Tx executions
 
         // SENDING Tx
-        require(destination.call.value(value)(data));        // send Tx, throws if not successfull
-
+        if data[1] == 0 (require(destination.call.value(value)(data)));                     // send ETH Tx, throws if not successfull
+        if data[1] > 0 (require(tokendestination.call.transfer(destination,data[2])));      // send Token Tx, throws if not successfull
+           
     }
 
     function () public payable {}     
