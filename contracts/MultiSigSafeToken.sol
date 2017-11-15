@@ -39,7 +39,7 @@ contract MultiSigSafe {
        
         // INITIALIZING LOCAL VARIABLES
         address destination = this;                     // init destination, walletaddress
-        address tokendestination = this;                // init destination, walletaddress
+        address tokenAddress = this;                // init destination, walletaddress
         uint8 recovered = 0;                            // init recovered
 
         // CHECK AND CHOOSING DESTINATION
@@ -48,9 +48,9 @@ contract MultiSigSafe {
         else if (destinationNumber == 2) { destination = destination2; }
 
         // CHECK AND CHOOSING TOKEN
-        if (tokenNumber == 0) { tokendestination = token0; }
-        else if (tokenNumber == 1) { tokendestination = token1; }
-        else if (tokenNumber == 2) { tokendestination = token2; }
+        if (tokenNumber == 0) { tokenAddress = token0; }
+        else if (tokenNumber == 1) { tokenAddress = token1; }
+        else if (tokenNumber == 2) { tokenAddress = token2; }
 
         // VERIFYING OWNERS
         // Follows ERC191 signature scheme: https://github.com/ethereum/EIPs/issues/191
@@ -73,7 +73,7 @@ contract MultiSigSafe {
         } 
 
         if (tokenvalue > 0 && ethvalue == 0) {          // verify tokenvalue > 0 and ethvalue == 0 for Token Tx
-            TokenTransfer tok = TokenTransfer(token);
+            TokenTransfer tok = TokenTransfer(tokenAddress);
             require(tok.transfer(destination, tokenvalue));  // send Token Tx,
         }
 
