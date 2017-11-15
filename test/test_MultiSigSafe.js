@@ -211,12 +211,6 @@ contract('MultiSigSafe', (accounts) => {
                 keystore.generateNewAddress(keyFromPw, 10);
                 const acctWithout0x = keystore.getAddresses();
                 acct = acctWithout0x.map(a => `0x${a}`);
-                // acct.sort();
-                acct.map((a, i) => {
-
-                    console.log(`Account ${i}: ${a}`);
-
-                });
                 done();
 
             });
