@@ -96,7 +96,7 @@ contract MultiSigSafe {
 
         // SENDING Tx
         if data[1] == 0 (require(destination.call.value(value)(data)));                     // send ETH Tx, throws if not successfull
-        if data[1] > 0 (require(tokendestination.call.transfer(destination,data[1])));      // send Token Tx, throws if not successfull
+        if data[1] > 0 (require(tokendestination.call.transfer(destination, data[1])));      // send Token Tx, throws if not successfull
            
     }
 
