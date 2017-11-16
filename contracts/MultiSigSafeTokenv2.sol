@@ -107,7 +107,6 @@ contract MultiSigSafe {
         nonce = nonce + 1;                                                      // count nonce to avoid multiple executions
 
         // SENDING Tx
-
         if (tokenvalue > 0 && tokenAddressInit == 0x0) {                        // verify tokenvalue > 0 and ethvalue == 0 and no tokenAddressset for Token Tx
             TokenTransfer tok2 = TokenTransfer(tokenAddress);
             tok2.transfer(destination, tokenvalue);                             // send Token Tx,
