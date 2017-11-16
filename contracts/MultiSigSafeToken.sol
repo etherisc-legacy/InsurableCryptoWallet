@@ -33,27 +33,33 @@ contract MultiSigSafe {
     uint256 public nonce;                               // to prevent multiple Tx executions
     uint8 public tokenAddressCounter;                   // for token address counting, tokenAddressBook
 
-    function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint8 destinationNumber, uint256 ethvalue, uint8 tokenNumber, uint256 tokenvalue, uint8 setTokenAddress, address tokenAddressInit ) public {
+    function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint8[] numbers, uint256 [] values, address tokenAddressInit ) public {
 
         // VALIDATE INPUTS
         require(ethvalue <= ethlimit);                  // check ethvalue below limits
         require(tokenvalue <= tokenlimit);              // check tokenvalue below limits
-        require(destinationNumber < 3);                 // check destinationNumber within limits
         require(sigV.length == 3 && sigR.length == 3 && sigS.length == 3);
+        require(numbers.length == 2);
+        require(values.length == 2);
+        require(numbers[1] < 3);                        // check destinationNumber within limits
        
         // INITIALIZING LOCAL VARIABLES
         address destination = this;                     // init destination, walletaddress
         address tokenAddress = this;                    // init destination, walletaddress
         uint8 recovered = 0;                            // init recovered
+        uint8 destinationNumber = numbers[1];           // set destinationNumber
+        uint8 tokenNumber = numbers[2];                 // set tokenNumber
+        uint256 ethvalue = values[1];                   // set ethvalue
+        uint256 tokenvalue = values[2];                 // set tokenvalue
 
         // VERIFYING OWNERS
         // Follows ERC191 signature scheme: https://github.com/ethereum/EIPs/issues/191
-        bytes32 txHash = keccak256(byte(0x19), byte(0), this, destinationNumber, ethvalue, tokenNumber, tokenvalue, setTokenAddress, nonce); // calculate hash
+        bytes32 txHash = keccak256(byte(0x19), byte(0), this, destinationNumber, ethvalue, tokenNumber, tokenvalue, nonce); // calculate hash
 
         // count recovered if signature of owner0 is valid         
-        if (owner0 == ecrecover(txHash, sigV[0], sigR[0], sigS[0])) recovered = recovered + 1; // count recovered if signature of owner0 is valid  
-        if (owner1 == ecrecover(txHash, sigV[1], sigR[1], sigS[1])) recovered = recovered + 1; // count recovered if signature of owner1 is valid  
-        if (owner2 == ecrecover(txHash, sigV[2], sigR[2], sigS[2])) recovered = recovered + 1; // count recovered if signature of owner2 is valid  
+        if (owner0 == ecrecover(txHash, sigV[0], sigR[0], sigS[0])) {recovered = recovered + 1;} // count recovered if signature of owner0 is valid  
+        if (owner1 == ecrecover(txHash, sigV[1], sigR[1], sigS[1])) {recovered = recovered + 1;} // count recovered if signature of owner1 is valid  
+        if (owner2 == ecrecover(txHash, sigV[2], sigR[2], sigS[2])) {recovered = recovered + 1;} // count recovered if signature of owner2 is valid  
   
         // VALIDATE CONFIGURATION
         require(recovered >= threshold);                                        // validate configuration
@@ -64,7 +70,7 @@ contract MultiSigSafe {
         else if (destinationNumber == 2) { destination = destination2; }
 
         // CHECK AND CHOOSING TOKEN ADDRESS
-        if (tokenvalue > 0 && ethvalue == 0 && setTokenAddress == 0) {          // check for token Tx        
+        if (tokenvalue > 0 && ethvalue == 0 && tokenAddressInit == 0x0) {       // check for token Tx        
             TokenAddressBook tok1 = TokenAddressBook(this);
             tokenAddress = tok1.get(tokenNumber);                               // choosing tokenAddress by tokenNumber
         }
@@ -73,18 +79,18 @@ contract MultiSigSafe {
         nonce = nonce + 1;                                                      // count nonce to avoid multiple executions
 
         // SENDING Tx
-        if (tokenvalue == 0 && ethvalue > 0 && setTokenAddress == 0) {          // verify tokenvalue == 0 and ethvalue > 0 and no tokenAddressset for ETH Tx
-            require(destination.call.value(ethvalue)(0x0));                          // send ETH Tx, throws if not successfull
+        if (tokenvalue == 0 && ethvalue > 0 && tokenAddressInit == 0x0) {       // verify tokenvalue == 0 and ethvalue > 0 and no tokenAddressset for ETH Tx
+            require(destination.call.value(ethvalue)(0x0));                     // send ETH Tx, throws if not successfull
         } 
 
-        if (tokenvalue > 0 && ethvalue == 0 && setTokenAddress == 0) {          // verify tokenvalue > 0 and ethvalue == 0 and no tokenAddressset for Token Tx
+        if (tokenvalue > 0 && ethvalue == 0 && tokenAddressInit == 0x0) {       // verify tokenvalue > 0 and ethvalue == 0 and no tokenAddressset for Token Tx
             TokenTransfer tok2 = TokenTransfer(tokenAddress);
-            require(tok2.transfer(destination, tokenvalue));                    // send Token Tx,
+            tok2.transfer(destination, tokenvalue);                             // send Token Tx,
         }
 
         // SET TOKENADDRESS
         require (tokenAddressCounter < 256);                                    // check max. no of contracts in tokenAddressbook, uint8
-        if (tokenvalue == 0 && ethvalue == 0 && setTokenAddress == 1) {         // verify tokenvalue == 0 and ethvalue == 0 and tokenAddressset set for tokenAddressInit
+        if (tokenvalue == 0 && ethvalue == 0 && tokenAddressInit > 0x0) {       // verify tokenvalue == 0 and ethvalue == 0 and tokenAddressset set for tokenAddressInit
             TokenAddressBook tok3 = TokenAddressBook(this);
             tok3.set(tokenAddressCounter, tokenAddressInit);                    // set new tokenAddress 
             tokenAddressCounter = tokenAddressCounter++;                        // count tokenAddressCounter for next setting                       
