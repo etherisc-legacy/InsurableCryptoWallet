@@ -7,7 +7,7 @@ contract TokenTransfer {
 contract TokenAddressBook {
     mapping (bytes32 => address) tokenAddressBook;  
     function set(uint8 tokenAddressCounter, address tokenAddressInit) {
-        tokenAddressBook[keccak256(tokenAddressCounter)] = tokenAddressInit;         // define set function for tokenAddressBook
+        tokenAddressBook[keccak256(tokenAddressCounter)] = tokenAddressInit;    // define set function for tokenAddressBook
         }   
     function get(uint8 tokenNumber) constant returns(address) {                 // define get function for tokenAddressBook
         return tokenAddressBook[keccak256(tokenNumber)];
@@ -31,7 +31,7 @@ contract MultiSigSafe {
     uint256 constant public ethlimit = 1000*10**18;     // Limit of one ETH Tx; modify at deploy time if needed
     uint256 constant public tokenlimit = 1000;          // Limit of one TOKEN Tx; modify at deploy time if needed
     uint256 public nonce;                               // to prevent multiple Tx executions
-    uint8 public tokenAddressCounter;                 // for token address counting, tokenAddressBook
+    uint8 public tokenAddressCounter;                   // for token address counting, tokenAddressBook
 
     function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint8 destinationNumber, uint256 ethvalue, uint8 tokenNumber, uint256 tokenvalue, uint8 setTokenAddress, address tokenAddressInit ) public {
 
@@ -74,7 +74,7 @@ contract MultiSigSafe {
 
         // SENDING Tx
         if (tokenvalue == 0 && ethvalue > 0 && setTokenAddress == 0) {          // verify tokenvalue == 0 and ethvalue > 0 and no tokenAddressset for ETH Tx
-            require(destination.call.value(ethvalue));                          // send ETH Tx, throws if not successfull
+            require(destination.call.value(ethvalue)(0x0));                          // send ETH Tx, throws if not successfull
         } 
 
         if (tokenvalue > 0 && ethvalue == 0 && setTokenAddress == 0) {          // verify tokenvalue > 0 and ethvalue == 0 and no tokenAddressset for Token Tx
