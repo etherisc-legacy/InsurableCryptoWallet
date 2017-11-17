@@ -12,44 +12,29 @@ contract MultiSigSafe {
     address constant public owner2 = 0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef;        //address of owner2
 
     // INITIALIZING DESTINATION 
-    address constant public interact0 = 0x821aea9a577a9b44299b9c15c88cf3087f3b5544;  //address of interact wallet 0
-    address constant public interact1 = 0x0d1d4e623d10f9fba5db95830f7d3839406c6af2;  //address of interact wallet 1
-    address constant public interact2 = 0x2932b7a2355d6fecc4b5c0b6bd44cc31df247a2e;  //address of interact wallet 2
+    address constant public destination0 = 0x821aea9a577a9b44299b9c15c88cf3087f3b5544;  //address of destination wallet 0
+    address constant public destination1 = 0x0d1d4e623d10f9fba5db95830f7d3839406c6af2;  //address of destination wallet 1
+    address constant public destination2 = 0x2932b7a2355d6fecc4b5c0b6bd44cc31df247a2e;  //address of destination wallet 2
   
     // INITIALIZING GLOBAL PUBLIC VARIABLES
     uint8 constant public threshold = 2;                // Number of valid signatures for executing Tx
-    uint256 constant public ethlimit = 1000*10**18;     // Limit of one ETH Tx; modify at deploy time if needed
+    uint256 constant public limit = 1000*10**18;     // Limit of one ETH Tx; modify at deploy time if needed
     uint256 public nonce;                               // to prevent multiple Tx executions
-    address public tokenAddress;                   // for token address counting, tokenAddressBook
 
-    modifier onlyInteract {
-        require(msg.sender == interact0 || msg.sender == interact1 || msg.sender == interact2);
-        _;
-    }
-
-    function setTokenAddress(address _tokenAddress) public onlyInteract {
-        tokenAddress = _tokenAddress;
-    }
-
-    function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint8 index, uint256 value, bool tokenTransfer) public onlyInteract {
+    function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint8 index, uint256 value, bool tokenTransfer, address tokenAddress) public {
 
         // VALIDATE INPUTS
         require(value <= limit);                        // check value below limits
-        require(index <= 3);
+        require(index < 3);
         require(sigV.length == 3 && sigR.length == 3 && sigS.length == 3);
        
-        if (tokenAddress != address(0x0)) {
-            token = tokenAddress;
-        }
-
         // INITIALIZING LOCAL VARIABLES
         address destination = this;                     // init destination, walletaddress
-        address tokenAddress = this;                    // init destination, walletaddress
         uint8 recovered = 0;                            // init recovered
 
         // VERIFYING OWNERS
         // Follows ERC191 signature scheme: https://github.com/ethereum/EIPs/issues/191
-        bytes32 txHash = keccak256(byte(0x19), byte(0), this, destinationNumber, ethvalue, tokenNumber, tokenvalue, nonce); // calculate hash
+        bytes32 txHash = keccak256(byte(0x19), byte(0), this, index, value, tokenTransfer, nonce); // calculate hash
 
         // count recovered if signature of owner0 is valid         
         if (owner0 == ecrecover(txHash, sigV[0], sigR[0], sigS[0])) {recovered = recovered + 1;} // count recovered if signature of owner0 is valid  
@@ -60,9 +45,9 @@ contract MultiSigSafe {
         require(recovered >= threshold);                                        // validate configuration
 
         // CHECK AND CHOOSING DESTINATION
-        if (index == 0) { destination = interact0; }
-        else if (index == 1) { destination = interact1; }
-        else if (index == 2) { destination = interact2; }
+        if (index == 0) { destination = destination0; }
+        else if (index == 1) { destination = destination1; }
+        else if (index == 2) { destination = destination2; }
 
         if (tokenTransfer) {
             TokenTransfer token = TokenTransfer(tokenAddress);
@@ -70,10 +55,6 @@ contract MultiSigSafe {
         } else {
             destination.transfer(value);
         } 
-    }
-
-    function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint8 index, uint256 value) public onlyInteract {
-        execute(sigV, sigR, sigS, index, value, false);
     }
 
     function () public payable {}     
