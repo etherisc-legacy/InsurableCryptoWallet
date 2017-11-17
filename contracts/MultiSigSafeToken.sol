@@ -1,7 +1,8 @@
 pragma solidity 0.4.18;
 
 contract TokenTransfer {
-    function transfer(address origin, uint256 value) public returns (bool _success);                      // define function for TokenTransfer
+    // minimal subset of ERC20
+    function transfer(address _to, uint256 _value) returns (bool success); 
 }
 
 contract MultiSigSafe {
@@ -43,7 +44,7 @@ contract MultiSigSafe {
         if (owner2 == ecrecover(txHash, sigV[2], sigR[2], sigS[2])) {recovered = recovered + 1;} // count recovered if signature of owner2 is valid  
   
         // VALIDATE CONFIGURATION
-        require(recovered >= threshold);                                        // validate configuration
+        require(recovered >= threshold);               // validate configuration
 
         // CHECK AND CHOOSING origin
         if (tokenTransfer) {
