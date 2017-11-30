@@ -16,56 +16,44 @@ contract MultiSigSafeToken {
     uint8 constant public threshold = 2;                // Number of valid signatures for executing Tx
     uint256 constant public limit = 1000*10**18;        // Value limit of one Tx; modify at deploy time if needed
     uint256 public nonce;                               // to prevent multiple Tx executions
-    TokenTransfer token;
 
-    event LogBool(string _msg, bool _bool);
-    event LogAddress(string _msg, address _address);
-    event LogUint8(string _msg, uint8 _uint8);
-    event LogUint256(string _msg, uint256 _uint256);
-    event LogBytes32(string _msg, bytes32 _bytes32);
+    function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint256 value, uint8 destinationIndex, address tokenAddress) public {
 
-
-    function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint256 value, bool tokenTransfer, address tokenAddress) public {
+        address destination;
 
         // VALIDATE INPUTS
-        require(value <= limit);                        // check value below limits
+        require(value <= limit);                                                                    // check value within limit
         require(sigV.length == 3 && sigR.length == 3 && sigS.length == 3);
+        require(destinationIndex < 3);
         require(msg.sender == owner0 || msg.sender == owner1 || msg.sender == owner2);
         
-        LogAddress('MultiSig Address', this);
-        LogUint256('Nonce: ', nonce);
-        LogUint256('Value: ', value);
-        LogBool('tokenTransfer', tokenTransfer);
-        LogUint256('sigV.length: ', sigV.length);
-        LogUint256('sigR.length: ', sigR.length);
-        LogUint256('sigS.length: ', sigS.length);
-        LogAddress('msg.sender: ', msg.sender);
-
-
-        // INITIALIZING LOCAL VARIABLES
-        uint8 recovered = 0;                            // init recovered
-
         // VERIFYING OWNERS
         // Follows ERC191 signature scheme: https://github.com/ethereum/EIPs/issues/191
-        bytes32 txHash = keccak256(byte(0x19), byte(0), this, nonce, value, tokenTransfer); // calculate hash
-        LogBytes32('txHash', txHash);
+        bytes32 txHash = keccak256(byte(0x19), byte(0), this, nonce, value, destinationIndex, tokenAddress != 0x0);      // calculate hash
 
-        // count recovered if signature of owner0 is valid         
-        if (owner0 == ecrecover(txHash, sigV[0], sigR[0], sigS[0])) {recovered = recovered + 1;} // count recovered if signature of owner0 is valid  
-        if (owner1 == ecrecover(txHash, sigV[1], sigR[1], sigS[1])) {recovered = recovered + 1;} // count recovered if signature of owner1 is valid  
-        if (owner2 == ecrecover(txHash, sigV[2], sigR[2], sigS[2])) {recovered = recovered + 1;} // count recovered if signature of owner2 is valid  
+        // count recovered if signature of owner is valid         
+        uint8 recovered = 0;                                                                        // init recovered
+        if (owner0 == ecrecover(txHash, sigV[0], sigR[0], sigS[0])) {recovered = recovered + 1;}    // count recovered if signature of owner0 is valid  
+        if (owner1 == ecrecover(txHash, sigV[1], sigR[1], sigS[1])) {recovered = recovered + 1;}    // count recovered if signature of owner1 is valid  
+        if (owner2 == ecrecover(txHash, sigV[2], sigR[2], sigS[2])) {recovered = recovered + 1;}    // count recovered if signature of owner2 is valid  
   
         // VALIDATE CONFIGURATION
-        // require(recovered >= threshold);               // validate configuration
-        LogUint8('recovered: ', recovered);
+        require(recovered >= threshold);
 
-        // CHECK AND CHOOSING origin
-        if (tokenTransfer) {
-            token = TokenTransfer(tokenAddress);
-            require(token.transfer(msg.sender, value));
+        // CHECK AND CHOOSING destination
+        if (destinationIndex == 0) destination = owner0;
+        if (destinationIndex == 1) destination = owner1;
+        if (destinationIndex == 2) destination = owner2;
+
+        if (tokenAddress == 0x0) {
+            destination.transfer(value);
         } else {
-            msg.sender.transfer(value);
+            TokenTransfer token = TokenTransfer(tokenAddress);
+            require(token.transfer(destination, value));
         } 
+
+        nonce = nonce + 1;
+
     }
 
     function () public payable {}     
