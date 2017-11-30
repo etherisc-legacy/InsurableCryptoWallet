@@ -22,6 +22,7 @@ contract MultiSigSafeToken {
     event LogAddress(string _msg, address _address);
     event LogUint8(string _msg, uint8 _uint8);
     event LogUint256(string _msg, uint256 _uint256);
+    event LogBytes32(string _msg, bytes32 _bytes32);
 
 
     function execute(uint8[] sigV, bytes32[] sigR, bytes32[] sigS, uint256 value, bool tokenTransfer, address tokenAddress) public {
@@ -31,7 +32,10 @@ contract MultiSigSafeToken {
         require(sigV.length == 3 && sigR.length == 3 && sigS.length == 3);
         require(msg.sender == owner0 || msg.sender == owner1 || msg.sender == owner2);
         
+        LogAddress('MultiSig Address', this);
+        LogUint256('Nonce: ', nonce);
         LogUint256('Value: ', value);
+        LogBool('tokenTransfer', tokenTransfer);
         LogUint256('sigV.length: ', sigV.length);
         LogUint256('sigR.length: ', sigR.length);
         LogUint256('sigS.length: ', sigS.length);
@@ -44,6 +48,7 @@ contract MultiSigSafeToken {
         // VERIFYING OWNERS
         // Follows ERC191 signature scheme: https://github.com/ethereum/EIPs/issues/191
         bytes32 txHash = keccak256(byte(0x19), byte(0), this, nonce, value, tokenTransfer); // calculate hash
+        LogBytes32('txHash', txHash);
 
         // count recovered if signature of owner0 is valid         
         if (owner0 == ecrecover(txHash, sigV[0], sigR[0], sigS[0])) {recovered = recovered + 1;} // count recovered if signature of owner0 is valid  

@@ -35,7 +35,7 @@ contract('MultiSigSafeToken', (accounts) => {
             multisigAddr.slice(2)}${
             leftPad(nonce.toString('16'), '64', '0')}${
             leftPad(value.toString('16'), '64', '0')}${
-            leftPad((new BigNumber(Number(tokenTransfer))).toString('16'), '64', '0')}`;
+            leftPad((new BigNumber(Number(tokenTransfer))).toString('16'), '2', '0')}`;
 
         const hash = solsha3(input);
 
