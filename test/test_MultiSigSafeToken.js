@@ -74,6 +74,12 @@ contract('MultiSigSafeToken', (accounts) => {
 
         }
 
+        // output for Remix:
+        //
+        console.log(`["${sigV[0]}","${sigV[1]}","${sigV[2]}"],["${sigR[0]}","${sigR[1]}","${sigR[2]}"],["${sigS[0]}","${sigS[1]}","${sigS[2]}"],"${value.toNumber()}","${Number(tokenTransfer)}"`);
+        console.log('Remix output:');
+
+
         return {
             sigV,
             sigR,
