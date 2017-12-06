@@ -1,4 +1,4 @@
-# Proposal for an Insurable Crypto Wallet ###
+# Proposal for an Insurable Crypto Wallet (ICW) ###
 
 We propose a multisig wallet which is reliable enough to store 
 values larger than USD 1M and is insurable at the same time.
