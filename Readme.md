@@ -11,4 +11,4 @@ values larger than USD 1M and is insurable at the same time.
 * Auditable configuration
 * Minimum state
 
-A detailed specification can be found in specification.md
+A detailed specification can be found in [specification.md](specification.md)
