@@ -28,21 +28,27 @@ contract('MultiSigSafeToken', (accounts) => {
     const owner2 = accounts[2];
     const noOwner = accounts[3];
 
+    const sendValue = web3.toWei(new BigNumber(0.01), 'ether');
+    const fundValue = web3.toWei(new BigNumber(0.1), 'ether');
+    const tokenMintValue = new BigNumber(1000);
+    const tokenFundValue = new BigNumber(100);
+    const tokenSendValue = new BigNumber(50);
 
-    const createSigs = (signers, multisigAddr, nonce, value, tokenTransfer) => {
+    const createSigs = (signers, multisigAddr, nonce, value, destinationIndex, tokenTransfer) => {
 
         const input = `${'0x1900'}${
             multisigAddr.slice(2)}${
             leftPad(nonce.toString('16'), '64', '0')}${
             leftPad(value.toString('16'), '64', '0')}${
-            leftPad((new BigNumber(Number(tokenTransfer))).toString('16'), '64', '0')}`;
+            leftPad((new BigNumber(Number(destinationIndex))).toString('16'), '2', '0')}${
+            leftPad((new BigNumber(Number(tokenTransfer))).toString('16'), '2', '0')}`;
 
         const hash = solsha3(input);
 
         console.log('MultiSigAddress: ', multisigAddr);
         console.log('Nonce: ', nonce);
         console.log('Value: ', ether(value));
-        console.log('tokenTransfer', tokenTransfer);
+        console.log('tokenTransfer', destinationIndex);
 
         console.log('txHash', hash);
 
@@ -68,6 +74,12 @@ contract('MultiSigSafeToken', (accounts) => {
 
         }
 
+        // output for Remix:
+        //
+        console.log(`["${sigV[0]}","${sigV[1]}","${sigV[2]}"],["${sigR[0]}","${sigR[1]}","${sigR[2]}"],["${sigS[0]}","${sigS[1]}","${sigS[2]}"],"${value.toNumber()}","${Number(tokenTransfer)}"`);
+        console.log('Remix output:');
+
+
         return {
             sigV,
             sigR,
@@ -79,8 +91,6 @@ contract('MultiSigSafeToken', (accounts) => {
     const executeSendSuccess = async function (signers, done) {
 
         const multisig = await MSS.new({ from: owner0, });
-        const sendValue = web3.toWei(new BigNumber(0.01), 'ether');
-        const fundValue = web3.toWei(new BigNumber(0.1), 'ether');
 
 
         // Receive funds
@@ -98,17 +108,14 @@ contract('MultiSigSafeToken', (accounts) => {
         let bal = await web3GetBalance(multisig.address);
         assert.equal(ether(bal), ether(fundValue), `multisig balance should be ${ether(fundValue)}`);
 
-        console.log('Wallet checked!');
+        let sigs = createSigs(signers, multisig.address, nonce, sendValue, 1, false);
 
-        let sigs = createSigs(signers, multisig.address, nonce, sendValue, false);
+        const oldBal = await web3GetBalance(owner1);
 
-        const oldBal = await web3GetBalance(owner0);
-
-        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, sendValue, false, 0x0, { from: owner0, gasLimit: 1000000, });
-        console.log('Check1');
+        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, sendValue, 1, 0x0, { from: owner0, gasLimit: 1000000, });
 
         // Check funds sent
-        bal = await web3GetBalance(owner0);
+        bal = await web3GetBalance(owner1);
         assert.equal(ether(bal.minus(oldBal)), ether(sendValue), `1. balance should be ${sendValue.toString()}`);
 
         // Check nonce updated
@@ -116,41 +123,38 @@ contract('MultiSigSafeToken', (accounts) => {
         assert.equal(nonce.toNumber(), 1, 'nonce should be 1');
 
         // Send again
-        sigs = createSigs(signers, multisig.address, nonce, sendValue, false);
-        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, sendValue, false, 0x0, { from: owner0, gasLimit: 1000000, });
-        console.log('Check2');
+        sigs = createSigs(signers, multisig.address, nonce, sendValue, 1, false);
+        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, sendValue, 1, 0x0, { from: owner0, gasLimit: 1000000, });
 
         // Check funds
-        bal = await web3GetBalance(owner0);
+        bal = await web3GetBalance(owner1);
         assert.equal(ether(bal.minus(oldBal)), ether(sendValue.times(2)), `2. balance should be ${sendValue.times(2).toString()}`);
 
         // Check nonce updated
         nonce = await multisig.nonce.call();
         assert.equal(nonce.toNumber(), 2, '3. nonce should be 2');
 
-        /*
-
         // Test contract interactions
-        const reg = await TestRegistry.new({ from: owner0, });
+        const token = await TestToken.new({ from: owner0, });
 
-        const number = 12345;
-        const data = `0x${lightwallet.txutils._encodeFunctionTxData('register', ['uint256'], [number])}`;
+        await token.mint(owner0, tokenMintValue);
+        const tokenBal0 = await token.balanceOf(owner0);
+        assert.equal(tokenBal0.toNumber(), tokenMintValue.toNumber(), `token balance of owner0 should be ${tokenMintValue.toNumber()} after minting`);
+        await token.transfer(multisig.address, tokenFundValue);
+        const tokenBal1 = await token.balanceOf(multisig.address);
+        assert.equal(tokenBal1.toNumber(), tokenFundValue.toNumber(), `token balance of multiSig should be ${tokenFundValue.toNumber()} after funding`);
 
-        sigs = createSigs(signers, multisig.address, nonce, reg.address, value, data);
-        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, reg.address, value, data, { from: owner0, gasLimit: 1000000, });
+        sigs = createSigs(signers, multisig.address, nonce, tokenSendValue, 1, true);
+        await multisig.execute(sigs.sigV, sigs.sigR, sigs.sigS, tokenSendValue, 1, token.address, { from: owner0, gasLimit: 1000000, });
 
         // Check that number has been set in registry
-        const numFromRegistry = await reg.registry(multisig.address);
-        assert.equal(numFromRegistry.toNumber(), number);
-
-        // Check funds in registry
-        bal = await web3GetBalance(reg.address);
-        assert.equal(bal.toString(), value.toString());
+        const tokenBal2 = await token.balanceOf(owner1);
+        assert.equal(tokenBal2.toNumber(), tokenSendValue.toNumber(), `token balance of owner1 should be ${tokenSendValue.toNumber()} after sending`);
 
         // Check nonce updated
         nonce = await multisig.nonce.call();
-        assert.equal(nonce.toNumber(), 3);
-*/
+        assert.equal(nonce.toNumber(), 3, 'nonce should be 3');
+
         done();
 
     };
@@ -158,8 +162,6 @@ contract('MultiSigSafeToken', (accounts) => {
     const executeSendFailure = async function (signers, done) {
 
         const multisig = await MSS.new({ from: owner0, });
-        const fundValue = web3.toWei(new BigNumber(0.1), 'ether');
-        const sendValue = web3.toWei(new BigNumber(2), 'ether');
 
         const nonce = await multisig.nonce.call();
 
