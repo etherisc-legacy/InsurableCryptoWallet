@@ -12,3 +12,6 @@ values larger than USD 1M and is insurable at the same time.
 * Minimum state
 
 A detailed specification can be found in [specification.md](specification.md)
+
+Thanks to Christian Lundkvist, who provided the [underlying idea](https://github.com/christianlundkvist/simple-multisig), and
+Vitalik Buterin who [implemented it in Viper](https://github.com/ethereum/viper/blob/master/examples/wallet/wallet.v.py)
