@@ -350,7 +350,7 @@ Bob Procedure
 
 ## Appendix
 
-* MSS 1. Example: https://github.com/etherisc/MultiSigSafe/blob/MSS_spec/contracts/MultiSigSafeToken_ForSpec.sol
-* MSS 2. Example: 
+* [MSS 1. Example](../blob/MSS_spec/contracts/MultiSigSafeToken_ForSpec.sol)
+* [MSS 2. Example](../blob/master/contracts/MultiSigSafeToken.sol) 
 
 
