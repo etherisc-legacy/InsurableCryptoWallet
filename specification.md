@@ -350,7 +350,11 @@ Bob Procedure
 
 ## Appendix
 
-* [MSS 1. Example](../blob/MSS_spec/contracts/MultiSigSafeToken_ForSpec.sol)
-* [MSS 2. Example](../blob/master/contracts/MultiSigSafeToken.sol) 
+We provide two sample implemenations. These should not be considered as working code, 
+please don't store money in them! Rather, we see them as starting point for a discussion 
+of this specification.
+
+* [MSS 1. Example](../MSS_spec/contracts/MultiSigSafeToken_ForSpec.sol)
+* [MSS 2. Example](../master/contracts/MultiSigSafeToken.sol) 
 
 
