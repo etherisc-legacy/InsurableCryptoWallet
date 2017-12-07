@@ -357,4 +357,3 @@ of this specification.
 * [MSS 1. Example](../MSS_spec/contracts/MultiSigSafeToken_ForSpec.sol)
 * [MSS 2. Example](../master/contracts/MultiSigSafeToken.sol) 
 
-
