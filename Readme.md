@@ -18,7 +18,7 @@ Vitalik Buterin who [implemented it in Viper](https://github.com/ethereum/viper/
 
 ## Adding Issues and Pull Requests
 
-We invite everybody to open Issues and submit Pull Requests. If you just want to leave a short note, you can use the pull request we created for this purpose: GH-2
+We invite everybody to open Issues and submit Pull Requests. If you just want to leave a short note, you can use the [pull request we created for this purpose](https://github.com/etherisc/InsurableCryptoWallet/pull/2).
 
 ### Opening an Issue
 
