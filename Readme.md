@@ -16,7 +16,7 @@ A detailed specification can be found in [specification.md](specification.md)
 Thanks to Christian Lundkvist, who provided the [underlying idea](https://github.com/christianlundkvist/simple-multisig), and
 Vitalik Buterin who [implemented it in Viper](https://github.com/ethereum/viper/blob/master/examples/wallet/wallet.v.py)
 
-## Adding Issues and Iull Requests
+## Adding Issues and Pull Requests
 
 We invite everybody to open Issues and submit Pull Requests:
 
